@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bala de Cañón de Newton</title>
+    <title>Laboratorio de Órbitas</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.js"></script>
     <link rel="stylesheet" href="css/style.css">
 </head>
@@ -13,58 +13,23 @@
         <div class="sidebar-inner">
 
             <div class="sim-header">
-                <div class="sim-logo">🌍</div>
+                <div class="sim-logo">🪐</div>
                 <div>
-                    <div class="sim-title">Bala de Newton</div>
-                    <div class="sim-subtitle">Órbitas · Velocidad de Escape</div>
+                    <div class="sim-title">Laboratorio de Órbitas</div>
+                    <div class="sim-subtitle">Mecánica Orbital · Newton · Kepler</div>
                 </div>
             </div>
 
-            <div class="card">
-                <div class="atom-card-label">Velocidad Inicial</div>
-                <div class="card-body-static">
-                    <div class="slider-row">
-                        <input type="range" id="vel-slider" min="1" max="110" value="60" step="1">
-                    </div>
-                    <div class="slider-meta">
-                        <span id="vel-label">—</span>
-                        <span id="vel-type" class="traj-label">—</span>
-                    </div>
-                    <div class="slider-marks" id="slider-marks"></div>
-                </div>
+            <div class="card mode-card">
+                <select id="mode-select">
+                    <option value="newton">Bala de Cañón de Newton</option>
+                    <option value="planets">Sistema Solar</option>
+                    <option value="kepler">Leyes de Kepler</option>
+                    <option value="binary">Estrellas Binarias</option>
+                </select>
             </div>
 
-            <div class="card">
-                <div class="atom-card-label">Control</div>
-                <div class="card-body-static">
-                    <div class="btn-group">
-                        <button id="btn-fire" class="btn-primary">▶ Disparar</button>
-                        <button id="btn-pause" disabled>⏸ Pausar</button>
-                    </div>
-                    <div class="reset-row" style="margin-top:5px">
-                        <button id="btn-reset">↺ Reiniciar</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="atom-card-label">Estado</div>
-                <div class="card-body-static">
-                    <div id="estado-box" class="status-box">
-                        <span class="ui-empty">Sin proyectil activo</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card is-expanded" id="info-card">
-                <button class="card-trigger">Descripción <span class="card-chevron">▼</span></button>
-                <div class="card-body">
-                    <div class="info-section">
-                        <p>Newton propuso que si se dispara una bala horizontalmente desde una montaña lo suficientemente alta, con la velocidad adecuada, la curvatura de su caída puede igualar la curvatura de la Tierra, manteniéndola en <em>órbita</em> indefinidamente.</p>
-                        <p>Con más velocidad, la órbita se vuelve <b>elíptica</b>. Al alcanzar la <b>velocidad de escape</b>, el proyectil abandona el campo gravitatorio para siempre.</p>
-                    </div>
-                </div>
-            </div>
+            <div id="mode-ui"></div>
 
         </div>
     </aside>
@@ -74,10 +39,5 @@
     </div>
 
     <script src="js/sketch.js"></script>
-    <script>
-        document.querySelectorAll('.card-trigger').forEach(btn => {
-            btn.addEventListener('click', () => btn.closest('.card').classList.toggle('is-expanded'));
-        });
-    </script>
 </body>
 </html>
