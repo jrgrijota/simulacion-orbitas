@@ -59,16 +59,37 @@ function draw() {
     if (bullet) updateEstadoBox();
 }
 
-// ─── PHYSICS: Step 2 — straight line (no gravity) ─────────────────────────────
-function updatePhysics() {
-    bullet.x += bullet.vx * DT;
-    bullet.y += bullet.vy * DT;
+// ─── PHYSICS: Step 3 — Newtonian gravity with sub-steps ──────────────────────
+const SUBSTEPS = 8;   // integration sub-steps per frame for accuracy
 
-    // Stop if bullet is far off-screen (> 3× canvas diagonal in km)
+function updatePhysics() {
+    let dt = DT / SUBSTEPS;
+    for (let i = 0; i < SUBSTEPS; i++) {
+        let r2  = bullet.x * bullet.x + bullet.y * bullet.y;
+        let r   = Math.sqrt(r2);
+        let ax  = -GM_KM * bullet.x / (r2 * r);   // km s⁻²
+        let ay  = -GM_KM * bullet.y / (r2 * r);
+
+        // Velocity Verlet (leapfrog): more stable than Euler for orbits
+        bullet.vx += ax * dt;
+        bullet.vy += ay * dt;
+        bullet.x  += bullet.vx * dt;
+        bullet.y  += bullet.vy * dt;
+
+        // Collision with Earth surface
+        if (r <= EARTH_R_KM) {
+            bullet.crashed = true;
+            endSimulation();
+            return;
+        }
+    }
+
+    // Stop if bullet escapes way off-screen
     let sx = cx + bullet.x / SCALE;
     let sy = cy - bullet.y / SCALE;
-    let offscreen = sx < -width || sx > width * 2 || sy < -height || sy > height * 2;
-    if (offscreen) endSimulation();
+    if (sx < -width * 3 || sx > width * 4 || sy < -height * 3 || sy > height * 4) {
+        endSimulation();
+    }
 }
 
 // ─── DRAW BULLET ──────────────────────────────────────────────────────────────
@@ -77,16 +98,33 @@ function drawBullet() {
     let sy = cy - bullet.y / SCALE;
 
     noStroke();
-    fill(255, 220, 80, 45);
-    circle(sx, sy, 16);
-    fill(255, 220, 80, 110);
-    circle(sx, sy, 10);
-    fill(255, 235, 110);
-    circle(sx, sy, 5);
+    if (bullet.crashed) {
+        // Red flash on impact
+        fill(255, 80, 60, 60);
+        circle(sx, sy, 22);
+        fill(255, 100, 60, 160);
+        circle(sx, sy, 13);
+        fill(255, 140, 80);
+        circle(sx, sy, 6);
+    } else {
+        fill(255, 220, 80, 45);
+        circle(sx, sy, 16);
+        fill(255, 220, 80, 110);
+        circle(sx, sy, 10);
+        fill(255, 235, 110);
+        circle(sx, sy, 5);
+    }
 }
 
 // ─── STATUS BOX ───────────────────────────────────────────────────────────────
 function updateEstadoBox() {
+    if (bullet.crashed) {
+        document.getElementById('estado-box').innerHTML =
+            '<span style="color:#ef4444;font-weight:700">💥 IMPACTO con la Tierra</span><br>' +
+            '<span style="color:#9aa6bd;font-size:10px">Pulsa Reiniciar para volver a disparar</span>';
+        return;
+    }
+
     let r_km  = Math.sqrt(bullet.x * bullet.x + bullet.y * bullet.y);
     let alt   = (r_km - EARTH_R_KM).toFixed(0);
     let speed = Math.sqrt(bullet.vx * bullet.vx + bullet.vy * bullet.vy);
