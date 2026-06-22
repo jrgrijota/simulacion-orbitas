@@ -17,6 +17,7 @@ const TIME_SCALE  = 1500;              // sim-seconds per real second
 const DT          = TIME_SCALE / 60;   // sim-seconds per frame ≈ 25 s
 
 const STAR_COUNT  = 160;
+const MAX_TRAIL   = 1200;   // max trail points stored
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
 let cx, cy;
@@ -24,6 +25,7 @@ let stars   = [];
 let bullet  = null;   // null = no active projectile
 let running = false;
 let paused  = false;
+let trail   = [];     // [{x, y}] in physics km coords
 
 // ─── P5 SETUP ─────────────────────────────────────────────────────────────────
 function setup() {
@@ -54,6 +56,7 @@ function setup() {
 function draw() {
     if (running && !paused) updatePhysics();
     drawBackground();
+    drawTrail();
     drawEarth();
     if (bullet) drawBullet();
     if (bullet) updateEstadoBox();
@@ -84,12 +87,54 @@ function updatePhysics() {
         }
     }
 
+    // Record trail point (every frame, after sub-steps)
+    trail.push({ x: bullet.x, y: bullet.y });
+    if (trail.length > MAX_TRAIL) trail.shift();
+
     // Stop if bullet escapes way off-screen
     let sx = cx + bullet.x / SCALE;
     let sy = cy - bullet.y / SCALE;
     if (sx < -width * 3 || sx > width * 4 || sy < -height * 3 || sy > height * 4) {
         endSimulation();
     }
+}
+
+// ─── TRAIL ────────────────────────────────────────────────────────────────────
+function drawTrail() {
+    if (trail.length < 2) return;
+
+    // Determine trail color based on bullet speed at launch
+    let isCrashed  = bullet && bullet.crashed;
+    let baseR = isCrashed ? 220 : 100;
+    let baseG = isCrashed ?  80 : 200;
+    let baseB = isCrashed ?  60 : 255;
+
+    drawingContext.save();
+    drawingContext.lineJoin = 'round';
+    drawingContext.lineCap  = 'round';
+
+    let n = trail.length;
+    for (let i = 1; i < n; i++) {
+        let t   = i / n;             // 0 = oldest, 1 = newest
+        let age = 1 - t;             // 0 = newest, 1 = oldest
+
+        let alpha = t * t * 200;     // fade towards tail
+        let w     = 0.5 + t * 1.8;  // thinner at tail
+
+        let sx0 = cx + trail[i-1].x / SCALE;
+        let sy0 = cy - trail[i-1].y / SCALE;
+        let sx1 = cx + trail[i  ].x / SCALE;
+        let sy1 = cy - trail[i  ].y / SCALE;
+
+        drawingContext.beginPath();
+        drawingContext.moveTo(sx0, sy0);
+        drawingContext.lineTo(sx1, sy1);
+        drawingContext.strokeStyle = `rgba(${baseR},${baseG},${baseB},${alpha / 255})`;
+        drawingContext.lineWidth   = w;
+        drawingContext.stroke();
+    }
+    drawingContext.restore();
+    noStroke();
 }
 
 // ─── DRAW BULLET ──────────────────────────────────────────────────────────────
@@ -175,6 +220,7 @@ function onPause() {
 
 function onReset() {
     bullet  = null;
+    trail   = [];
     running = false;
     paused  = false;
     document.getElementById('btn-fire').disabled   = false;
