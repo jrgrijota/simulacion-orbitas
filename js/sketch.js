@@ -22,10 +22,12 @@ const MAX_TRAIL   = 1200;   // max trail points stored
 // ─── STATE ────────────────────────────────────────────────────────────────────
 let cx, cy;
 let stars   = [];
-let bullet  = null;   // null = no active projectile
-let running = false;
-let paused  = false;
-let trail   = [];     // [{x, y}] in physics km coords
+let bullet     = null;   // null = no active projectile
+let running    = false;
+let paused     = false;
+let trail      = [];     // [{x, y}] in physics km coords
+let orbitCount = 0;
+let lastAngle  = null;   // for orbit counting (angle around Earth)
 
 // ─── P5 SETUP ─────────────────────────────────────────────────────────────────
 function setup() {
@@ -37,6 +39,7 @@ function setup() {
 
     generateStars();
     updateVelLabel();
+    buildSliderMarks();
 
     document.getElementById('vel-slider').addEventListener('input', updateVelLabel);
     document.getElementById('btn-fire').addEventListener('click',  onFire);
@@ -91,10 +94,28 @@ function updatePhysics() {
     trail.push({ x: bullet.x, y: bullet.y });
     if (trail.length > MAX_TRAIL) trail.shift();
 
+    // Orbit counter: detect full revolution by tracking angle wrapping
+    let angle = Math.atan2(bullet.y, bullet.x);
+    if (lastAngle !== null) {
+        let delta = angle - lastAngle;
+        // Unwrap: if delta > PI someone jumped the branch cut
+        if (delta >  Math.PI) delta -= 2 * Math.PI;
+        if (delta < -Math.PI) delta += 2 * Math.PI;
+        bullet._totalAngle = (bullet._totalAngle || 0) + delta;
+        let prevOrbits = orbitCount;
+        orbitCount = Math.floor(Math.abs(bullet._totalAngle) / (2 * Math.PI));
+        if (orbitCount > prevOrbits) {
+            bullet._orbitFlash = 30;  // flash counter in frames
+        }
+    }
+    lastAngle = angle;
+    if (bullet._orbitFlash > 0) bullet._orbitFlash--;
+
     // Stop if bullet escapes way off-screen
     let sx = cx + bullet.x / SCALE;
     let sy = cy - bullet.y / SCALE;
     if (sx < -width * 3 || sx > width * 4 || sy < -height * 3 || sy > height * 4) {
+        bullet.escaped = true;
         endSimulation();
     }
 }
@@ -169,6 +190,12 @@ function updateEstadoBox() {
             '<span style="color:#9aa6bd;font-size:10px">Pulsa Reiniciar para volver a disparar</span>';
         return;
     }
+    if (bullet.escaped) {
+        document.getElementById('estado-box').innerHTML =
+            '<span style="color:#a78bfa;font-weight:700">🚀 ¡Velocidad de escape!</span><br>' +
+            '<span style="color:#9aa6bd;font-size:10px">El proyectil abandona el campo gravitatorio</span>';
+        return;
+    }
 
     let r_km  = Math.sqrt(bullet.x * bullet.x + bullet.y * bullet.y);
     let alt   = (r_km - EARTH_R_KM).toFixed(0);
@@ -185,10 +212,22 @@ function updateEstadoBox() {
         traj = 'Vel. de escape';    col = '#a78bfa';
     }
 
+    // Specific orbital energy: ε = v²/2 - GM/r  (km² s⁻²)
+    let r_km2 = Math.sqrt(bullet.x * bullet.x + bullet.y * bullet.y);
+    let energy = (speed * speed) / 2 - GM_KM / r_km2;
+    let energyStr = (energy >= 0 ? '+' : '') + energy.toFixed(1) + ' km²/s²';
+
+    let orbitRow = (traj !== 'Suborbital' && traj !== 'Vel. de escape')
+        ? row('Órbitas', orbitCount + (bullet._orbitFlash > 0 ? ' ✓' : ''),
+              bullet._orbitFlash > 0 ? '#10b981' : '#eef2f8')
+        : '';
+
     document.getElementById('estado-box').innerHTML =
         row('Velocidad',   speed.toFixed(2) + ' km/s', '#eef2f8') +
         row('Altitud',     Number(alt).toLocaleString() + ' km',   '#eef2f8') +
-        row('Trayectoria', traj, col);
+        row('Energía',     energyStr, energy < 0 ? '#60a5fa' : '#a78bfa') +
+        row('Trayectoria', traj, col) +
+        orbitRow;
 }
 
 function row(label, value, valueColor) {
@@ -204,9 +243,12 @@ function onFire() {
     // Physics coords: x = east (right), y = north (up)
     // Launch from north pole top of mountain → (0, +LAUNCH_R_KM)
     // Initial velocity: eastward (+x), no vertical component
-    bullet  = { x: 0, y: LAUNCH_R_KM, vx: v0, vy: 0 };
-    running = true;
-    paused  = false;
+    bullet     = { x: 0, y: LAUNCH_R_KM, vx: v0, vy: 0 };
+    trail      = [];
+    orbitCount = 0;
+    lastAngle  = null;
+    running    = true;
+    paused     = false;
 
     document.getElementById('btn-fire').disabled   = true;
     document.getElementById('btn-pause').disabled  = false;
@@ -219,10 +261,12 @@ function onPause() {
 }
 
 function onReset() {
-    bullet  = null;
-    trail   = [];
-    running = false;
-    paused  = false;
+    bullet     = null;
+    trail      = [];
+    orbitCount = 0;
+    lastAngle  = null;
+    running    = false;
+    paused     = false;
     document.getElementById('btn-fire').disabled   = false;
     document.getElementById('btn-pause').disabled  = true;
     document.getElementById('btn-pause').textContent = '⏸ Pausar';
@@ -336,6 +380,26 @@ function drawMountain() {
     noStroke();
     fill(80, 70, 55);
     circle(4, baseY - mh + 2, 7);
+}
+
+// ─── SLIDER MARKS ─────────────────────────────────────────────────────────────
+function buildSliderMarks() {
+    let container = document.getElementById('slider-marks');
+    if (!container) return;
+    let marks = [
+        { v: V_CIRC, label: 'Vc', color: '#10b981' },
+        { v: V_ESC,  label: 'Ve', color: '#a78bfa' }
+    ];
+    marks.forEach(m => {
+        let pct  = (m.v / V_MAX) * 100;          // fraction of slider range
+        let left = Math.min(96, Math.max(4, pct)); // clamp to visible area
+        let el   = document.createElement('span');
+        el.className   = 'slider-mark';
+        el.textContent = m.label;
+        el.style.left  = left + '%';
+        el.style.color = m.color;
+        container.appendChild(el);
+    });
 }
 
 // ─── VELOCITY LABEL ───────────────────────────────────────────────────────────

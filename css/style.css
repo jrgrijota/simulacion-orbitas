@@ -188,6 +188,30 @@ input[type="range"]::-webkit-slider-thumb:hover { background: var(--accent-stron
 .traj-elliptical  { color: var(--accent); border-color: #1e40af; }
 .traj-escape      { color: #a78bfa; border-color: #4c1d95; }
 
+/* ─── SLIDER MARKS ───────────────────────────────── */
+.slider-marks {
+    position: relative;
+    height: 14px;
+    margin-top: 1px;
+}
+.slider-mark {
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    font-size: 9px;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+.slider-mark::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    width: 1px;
+    height: 4px;
+    background: var(--border-strong);
+}
+
 /* ─── STATUS BOX ──────────────────────────────── */
 .status-box {
     background: var(--bg-input);
