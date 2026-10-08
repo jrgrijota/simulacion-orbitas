@@ -538,21 +538,22 @@ MODES['planets'] = (() => {
     // Real semi-major axes (AU): Mercury 0.387, Venus 0.723, Earth 1.0,
     //   Mars 1.524, Jupiter 5.203, Saturn 9.537, Uranus 19.19, Neptune 30.07
     // Scale: 1 AU = 55 px (Neptune at ~1654 px — we'll use a logarithmic-ish scale)
-    // For educational clarity we use a slightly compressed scale for outer planets
-    // Orbital periods (Earth years) follow Kepler T² ∝ a³
+    // a: semieje mayor REAL (UA), el que se muestra y cumple T² = a³ con T real.
+    // aDib: radio de dibujo (UA de pantalla); de Júpiter hacia fuera se comprime
+    // para que quepan todos, pero solo afecta al dibujo, nunca a los datos.
 
     const AU_PX = 55;   // 1 AU in pixels at default zoom
     const SUN_R = 22;   // px
 
     const PLANETS = [
-        { name: 'Mercurio', a: 0.387, T: 0.241,  r: 3,  color: '#b0a090', ring: false },
-        { name: 'Venus',    a: 0.723, T: 0.615,  r: 5,  color: '#e8c890', ring: false },
-        { name: 'Tierra',   a: 1.000, T: 1.000,  r: 5,  color: '#4090d8', ring: false },
-        { name: 'Marte',    a: 1.524, T: 1.881,  r: 4,  color: '#c05030', ring: false },
-        { name: 'Júpiter',  a: 3.20,  T: 11.86,  r: 12, color: '#c8a060', ring: false },
-        { name: 'Saturno',  a: 4.40,  T: 29.46,  r: 10, color: '#d4c080', ring: true  },
-        { name: 'Urano',    a: 5.50,  T: 84.01,  r: 7,  color: '#90d0d8', ring: false },
-        { name: 'Neptuno',  a: 6.50,  T: 164.8,  r: 7,  color: '#4060c8', ring: false },
+        { name: 'Mercurio', a: 0.387,  aDib: 0.387, T: 0.241,  r: 3,  color: '#b0a090', ring: false },
+        { name: 'Venus',    a: 0.723,  aDib: 0.723, T: 0.615,  r: 5,  color: '#e8c890', ring: false },
+        { name: 'Tierra',   a: 1.000,  aDib: 1.000, T: 1.000,  r: 5,  color: '#4090d8', ring: false },
+        { name: 'Marte',    a: 1.524,  aDib: 1.524, T: 1.881,  r: 4,  color: '#c05030', ring: false },
+        { name: 'Júpiter',  a: 5.203,  aDib: 3.20,  T: 11.86,  r: 12, color: '#c8a060', ring: false },
+        { name: 'Saturno',  a: 9.537,  aDib: 4.40,  T: 29.46,  r: 10, color: '#d4c080', ring: true  },
+        { name: 'Urano',    a: 19.19,  aDib: 5.50,  T: 84.01,  r: 7,  color: '#90d0d8', ring: false },
+        { name: 'Neptuno',  a: 30.07,  aDib: 6.50,  T: 164.8,  r: 7,  color: '#4060c8', ring: false },
     ];
 
     // Compute angular speeds: ω = 2π / T_years, in rad per sim-year
@@ -574,8 +575,8 @@ MODES['planets'] = (() => {
         for (let i = 0; i < PLANETS.length; i++) {
             let omega = 2 * Math.PI / PLANETS[i].T;
             angles[i] += omega * dt;
-            let x = cx + Math.cos(angles[i]) * PLANETS[i].a * AU_PX * zoom;
-            let y = cy + Math.sin(angles[i]) * PLANETS[i].a * AU_PX * zoom;
+            let x = cx + Math.cos(angles[i]) * PLANETS[i].aDib * AU_PX * zoom;
+            let y = cy + Math.sin(angles[i]) * PLANETS[i].aDib * AU_PX * zoom;
             trails[i].push({ x, y });
             if (trails[i].length > MAX_TRAIL_PTS) trails[i].shift();
         }
@@ -592,7 +593,7 @@ MODES['planets'] = (() => {
     function drawOrbits() {
         noFill();
         for (let i = 0; i < PLANETS.length; i++) {
-            let r = PLANETS[i].a * AU_PX * zoom;
+            let r = PLANETS[i].aDib * AU_PX * zoom;
             stroke(60, 70, 100, 80);
             strokeWeight(0.7);
             drawingContext.setLineDash([3, 5]);
@@ -642,8 +643,8 @@ MODES['planets'] = (() => {
         // Planets
         for (let i = 0; i < PLANETS.length; i++) {
             let p = PLANETS[i];
-            let x = cx + Math.cos(angles[i]) * p.a * AU_PX * zoom;
-            let y = cy + Math.sin(angles[i]) * p.a * AU_PX * zoom;
+            let x = cx + Math.cos(angles[i]) * p.aDib * AU_PX * zoom;
+            let y = cy + Math.sin(angles[i]) * p.aDib * AU_PX * zoom;
             let isSelected = selectedPlanet === i;
 
             // Selection ring
@@ -668,7 +669,7 @@ MODES['planets'] = (() => {
 
     function drawPlanetInfo() {
         let p = PLANETS[selectedPlanet];
-        let x = cx + Math.cos(angles[selectedPlanet]) * p.a * AU_PX * zoom;
+        let x = cx + Math.cos(angles[selectedPlanet]) * p.aDib * AU_PX * zoom;
         let y = cy + Math.sin(angles[selectedPlanet]) * p.a * AU_PX * zoom;
         // Small label near planet
         let lx = x + p.r + 8, ly = y - 4;
@@ -741,7 +742,8 @@ MODES['planets'] = (() => {
         // Kepler III card
         container.appendChild(collapsibleCard('Ley de Kepler III (T² ∝ a³)',
             `<p>Para todos los planetas del Sistema Solar: <b>T² = a³</b> (con T en años y a en UA). Esta relación es consecuencia directa de la ley de gravitación universal de Newton.</p>
-            <p>Pulsa sobre cualquier planeta de la lista para ver sus parámetros orbitales y verificar la ley.</p>`, false));
+            <p>Pulsa sobre cualquier planeta de la lista para ver sus parámetros orbitales y verificar la ley.</p>
+            <p>Ojo: de Júpiter hacia fuera las órbitas están dibujadas más cerca de lo que les corresponde para que quepan en la pantalla; los datos de la lista son los reales.</p>`, false));
 
         // Events: planet legend clicks
         container.querySelectorAll('.planet-row').forEach(row => {
