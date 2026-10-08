@@ -296,6 +296,19 @@ MODES['newton'] = (() => {
         noStroke(); fill(80,70,55); circle(4,baseY-mh+2,7);
     }
 
+    // Flecha con punta y rótulo, para los vectores de la bala
+    function drawVectorArrow(x, y, ux, uy, len, col, label) {
+        let ex = x + ux*len, ey = y + uy*len;
+        stroke(col); strokeWeight(2.2);
+        line(x, y, ex, ey);
+        noStroke(); fill(col);
+        let px = -uy, py = ux;
+        triangle(ex + ux*6, ey + uy*6, ex + px*4, ey + py*4, ex - px*4, ey - py*4);
+        textSize(13); textStyle(BOLD); textAlign(CENTER, CENTER);
+        text(label, ex + ux*16, ey + uy*16);
+        textStyle(NORMAL);
+    }
+
     function drawBullet() {
         let sx = cx + bullet.x / SCALE, sy = cy - bullet.y / SCALE;
         noStroke();
@@ -307,11 +320,18 @@ MODES['newton'] = (() => {
             fill(255,220,80,40); circle(sx,sy,18);
             fill(255,220,80,100);circle(sx,sy,11);
             fill(255,235,110);   circle(sx,sy,5);
-            // velocity arrow
+            // Velocidad (amarilla, tangente) y fuerza peso (roja, hacia el centro
+            // de la Tierra). Ver las dos a la vez deja claro que en órbita no hay
+            // ninguna fuerza «hacia delante»: solo la gravedad, que curva el camino.
+            // La flecha v crece con la rapidez; la del peso, con g ∝ 1/r².
             let sp = Math.sqrt(bullet.vx*bullet.vx + bullet.vy*bullet.vy);
-            let nx = bullet.vx/sp, ny = -bullet.vy/sp;
-            stroke(255,235,110,170); strokeWeight(1.5);
-            line(sx,sy,sx+nx*24,sy+ny*24); noStroke();
+            let r  = Math.sqrt(bullet.x*bullet.x + bullet.y*bullet.y);
+            if (sp > 1e-9) {
+                let vLen = constrain(30 * sp / V_CIRC, 10, 60);
+                drawVectorArrow(sx, sy, bullet.vx/sp, -bullet.vy/sp, vLen, color(255,225,90), 'v');
+            }
+            let fLen = constrain(30 * (LAUNCH_R_KM / r) * (LAUNCH_R_KM / r), 8, 50);
+            drawVectorArrow(sx, sy, -bullet.x/r, bullet.y/r, fLen, color(255,95,80), 'P');
         }
 
         // Periapsis / apoapsis markers when in stable orbit
