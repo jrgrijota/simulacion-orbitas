@@ -240,7 +240,9 @@ button:disabled { opacity: 0.28; cursor: not-allowed; }
     border: 1px solid var(--border-strong);
     box-shadow: 0 0 0 1px rgba(59,130,246,0.06), 0 4px 24px rgba(0,0,0,0.45);
 }
-#sim-frame canvas { display: block; }
+/* El lienzo ocupa el ancho del marco; si es más estrecho que el tamaño lógico
+   mínimo (640 px, ver frameCanvasSize en sketch.js) se escala visualmente. */
+#sim-frame canvas { display: block; width: 100% !important; height: auto !important; }
 
 /* ─── PLANET LEGEND ─────────────────────────────── */
 .planet-legend { display: flex; flex-direction: column; gap: 3px; }
@@ -255,3 +257,14 @@ button:disabled { opacity: 0.28; cursor: not-allowed; }
 .planet-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
 .planet-name { flex: 1; font-weight: 500; }
 .planet-stat { font-size: 9.5px; color: var(--text-muted); font-family: monospace; }
+
+/* ─── PANTALLAS ESTRECHAS (móvil, tablet en vertical) ───
+   La simulación pasa arriba a todo el ancho, con proporción 4:3, y los
+   controles debajo. En ordenador no cambia nada. */
+@media (max-width: 960px) {
+    html, body { height: auto; overflow: auto; }
+    body { flex-direction: column; height: auto; }
+    #canvas-holder { order: -1; padding: 10px; overflow: visible; }
+    #sim-frame { flex: none; aspect-ratio: 4 / 3; }
+    .sidebar { width: 100%; overflow: visible; border-right: none; border-top: 1px solid var(--border-main); }
+}

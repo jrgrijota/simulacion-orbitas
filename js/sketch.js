@@ -30,9 +30,19 @@ function switchMode(name) {
 }
 
 // ── P5 SETUP / DRAW ────────────────────────────────────────────────────────────
-function setup() {
+// Tamaño lógico del lienzo: el del marco. En pantallas estrechas no baja de
+// 640×480, porque la Tierra, las órbitas y los planetas se dibujan con radios
+// fijos en píxeles; entonces el lienzo se escala solo visualmente (ver @media).
+const MIN_CANVAS_W = 640;
+function frameCanvasSize() {
     let frame = document.getElementById('sim-frame');
-    let cnv   = createCanvas(frame.offsetWidth, frame.offsetHeight);
+    if (frame.offsetWidth < MIN_CANVAS_W) return { w: MIN_CANVAS_W, h: MIN_CANVAS_W * 3 / 4 };
+    return { w: frame.offsetWidth, h: frame.offsetHeight };
+}
+
+function setup() {
+    let s     = frameCanvasSize();
+    let cnv   = createCanvas(s.w, s.h);
     cnv.parent('sim-frame');
     cx = width / 2;  cy = height / 2;
     generateStars();
@@ -42,8 +52,8 @@ function setup() {
     switchMode(sel.value);
 
     window.addEventListener('resize', () => {
-        let f = document.getElementById('sim-frame');
-        resizeCanvas(f.offsetWidth, f.offsetHeight);
+        let s = frameCanvasSize();
+        resizeCanvas(s.w, s.h);
         cx = width / 2;  cy = height / 2;
         bgGrad = null;
         generateStars();
