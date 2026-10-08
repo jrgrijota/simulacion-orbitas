@@ -929,11 +929,15 @@ MODES['kepler'] = (() => {
             // Shade recent swept area
             const SECTOR_FRAMES = 40;
             let sectors = [];
-            let stepAng = BASE_DT * timeMultiplier;
+            // Se recorre hacia atrás la misma ley que mueve el planeta (dθ = L/r²·dt):
+            // el sector es el área barrida en los últimos SECTOR_FRAMES fotogramas,
+            // que es la misma en cualquier punto de la órbita.
+            let dt = BASE_DT * timeMultiplier;
             let L = angularMomentum();
             let ang = angle;
             for (let i = 0; i < SECTOR_FRAMES; i++) {
-                ang -= stepAng * (L / (trueAnomalyToPos(ang).r * trueAnomalyToPos(ang).r)) / stepAng;
+                let r = trueAnomalyToPos(ang).r;
+                ang -= (L / (r * r)) * dt;
                 ang = (ang + TWO_PI) % TWO_PI;
                 let p = trueAnomalyToPos(ang);
                 sectors.push(toScreen(p.x, p.y));
