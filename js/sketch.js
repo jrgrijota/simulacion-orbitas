@@ -116,6 +116,9 @@ MODES['newton'] = (() => {
     const V_CIRC      = Math.sqrt(GM_EARTH_KM / LAUNCH_R_KM); // ≈ 6.89 km/s
     const V_ESC       = V_CIRC * Math.SQRT2;                   // ≈ 9.74 km/s
     const V_MAX       = V_ESC * 1.18;
+    // Velocidad mínima para no chocar con la Tierra: con ella, el perigeo de la
+    // elipse (cuyo apogeo es la cima de la montaña) roza la superficie. ≈ 6,44 km/s
+    const V_MIN_ORB   = Math.sqrt(2 * GM_EARTH_KM * EARTH_R_KM / (LAUNCH_R_KM * (LAUNCH_R_KM + EARTH_R_KM)));
     const SUBSTEPS    = 10;
     const MAX_TRAIL   = 800;
     const BASE_DT     = 1500 / 60;   // sim-s per frame at 1× speed
@@ -413,9 +416,10 @@ MODES['newton'] = (() => {
         let vKms = (pct / 100) * V_MAX;
         document.getElementById('n-vel-label').textContent = vKms.toFixed(2) + ' km/s';
         let cls, txt;
-        if      (vKms < V_CIRC * 0.97) { cls = 'traj-suborbital'; txt = 'Suborbital'; }
+        if      (vKms < V_MIN_ORB)     { cls = 'traj-suborbital'; txt = 'Suborbital'; }
+        else if (vKms < V_CIRC * 0.97) { cls = 'traj-elliptical'; txt = 'Órbita elíptica'; }
         else if (vKms < V_CIRC * 1.03) { cls = 'traj-circular';   txt = 'Órbita circular'; }
-        else if (vKms < V_ESC  * 0.99) { cls = 'traj-elliptical'; txt = 'Órbita elíptica'; }
+        else if (vKms < V_ESC)         { cls = 'traj-elliptical'; txt = 'Órbita elíptica'; }
         else                            { cls = 'traj-escape';     txt = 'Vel. de escape'; }
         let el = document.getElementById('n-vel-type');
         el.className = 'traj-label ' + cls; el.textContent = txt;
