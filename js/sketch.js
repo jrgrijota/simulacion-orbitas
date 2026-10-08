@@ -8,6 +8,11 @@ const GM_EARTH_KM = 3.986e5;    // km³ s⁻²
 const GM_SUN_KM   = 1.327e11;   // km³ s⁻²
 const EARTH_R_KM  = 6371;
 
+// Números con coma decimal, como se escriben en clase.
+function fmt(x, d) {
+    return Number(x).toFixed(d).replace('.', ',');
+}
+
 // ── SHARED VISUAL ──────────────────────────────────────────────────────────────
 const STAR_COUNT  = 160;
 
@@ -374,17 +379,17 @@ MODES['newton'] = (() => {
         let altStr  = Math.round(el.r - EARTH_R_KM).toLocaleString() + ' km';
         let periStr = Math.round(el.rP - EARTH_R_KM).toLocaleString() + ' km';
         let apoStr  = el.rA < 1e8 ? Math.round(el.rA - EARTH_R_KM).toLocaleString() + ' km' : '∞';
-        let perStr  = el.T < Infinity ? (el.T / 60).toFixed(1) + ' min' : '—';
+        let perStr  = el.T < Infinity ? fmt((el.T / 60), 1) + ' min' : '—';
         let epsSign = el.eps >= 0 ? '+' : '';
         let epsCol  = el.eps < 0 ? '#60a5fa' : '#a78bfa';
         let orbRow  = (el.type !== 'Suborbital' && el.type !== 'Vel. de escape')
             ? uiRow('Órbitas', orbitCount + (bullet._flash > 0 ? ' ✓' : ''),
                     bullet._flash > 0 ? '#10b981' : '#eef2f8') : '';
         box.innerHTML =
-            uiRow('Velocidad',   el.v.toFixed(2) + ' km/s') +
+            uiRow('Velocidad',   fmt(el.v, 2) + ' km/s') +
             uiRow('Altitud',     altStr) +
             uiRow('Trayectoria', el.type, el.col) +
-            uiRow('Energía ε',   epsSign + el.eps.toFixed(1) + ' km²/s²', epsCol) +
+            uiRow('Energía ε',   epsSign + fmt(el.eps, 1) + ' km²/s²', epsCol) +
             uiRow('Perigeo',     periStr, el.rP < EARTH_R_KM + 100 ? '#f97316' : '#9aa6bd') +
             uiRow('Apogeo',      apoStr, '#9aa6bd') +
             uiRow('Período',     perStr, '#9aa6bd') +
@@ -444,7 +449,7 @@ MODES['newton'] = (() => {
     function updateVelLabel() {
         let pct  = parseInt(document.getElementById('n-slider').value);
         let vKms = (pct / 100) * V_MAX;
-        document.getElementById('n-vel-label').textContent = vKms.toFixed(2) + ' km/s';
+        document.getElementById('n-vel-label').textContent = fmt(vKms, 2) + ' km/s';
         let cls, txt;
         if      (vKms < V_MIN_ORB)     { cls = 'traj-suborbital'; txt = 'Suborbital'; }
         else if (vKms < V_CIRC * 0.97) { cls = 'traj-elliptical'; txt = 'Órbita elíptica'; }
@@ -487,8 +492,8 @@ MODES['newton'] = (() => {
                 </div>
                 <div class="slider-marks" id="n-marks"></div>
                 <div class="preset-row">
-                    <button class="btn-preset-circ" id="n-preset-circ">Vc ≈ ${V_CIRC.toFixed(2)} km/s</button>
-                    <button class="btn-preset-esc"  id="n-preset-esc" >Ve ≈ ${V_ESC.toFixed(2)} km/s</button>
+                    <button class="btn-preset-circ" id="n-preset-circ">Vc ≈ ${fmt(V_CIRC, 2)} km/s</button>
+                    <button class="btn-preset-esc"  id="n-preset-esc" >Ve ≈ ${fmt(V_ESC, 2)} km/s</button>
                 </div>
             </div>`;
         container.appendChild(vc);
@@ -715,8 +720,8 @@ MODES['planets'] = (() => {
         fill(200, 215, 240); textSize(10); textAlign(LEFT, TOP);
         text(p.name, lx, ly - 11);
         fill(140, 155, 180); textSize(9);
-        text(`a = ${p.a.toFixed(3)} AU`, lx, ly + 1);
-        text(`T = ${p.T.toFixed(3)} años`, lx, ly + 12);
+        text(`a = ${fmt(p.a, 3)} AU`, lx, ly + 1);
+        text(`T = ${fmt(p.T, 3)} años`, lx, ly + 12);
         textAlign(LEFT, BASELINE);
     }
 
@@ -738,7 +743,7 @@ MODES['planets'] = (() => {
             `<div class="planet-row" data-idx="${i}">
                 <div class="planet-dot" style="background:${p.color}"></div>
                 <span class="planet-name">${p.name}</span>
-                <span class="planet-stat">${p.a.toFixed(3)} AU · ${p.T.toFixed(2)} a</span>
+                <span class="planet-stat">${fmt(p.a, 3)} AU · ${fmt(p.T, 2)} a</span>
             </div>`).join('');
         lc.innerHTML = `<div class="atom-card-label">Planetas</div>
             <div class="card-body-static"><div class="planet-legend">${rows}</div></div>`;
@@ -788,9 +793,9 @@ MODES['planets'] = (() => {
                     r.classList.toggle('active', i === selectedPlanet));
                 if (selectedPlanet !== null) {
                     let p = PLANETS[selectedPlanet];
-                    let t2a3 = (p.T * p.T / (p.a * p.a * p.a)).toFixed(4);
+                    let t2a3 = fmt((p.T * p.T / (p.a * p.a * p.a)), 4);
                     row.querySelector('.planet-stat').textContent =
-                        `${p.a.toFixed(3)} AU · T²/a³=${t2a3}`;
+                        `${fmt(p.a, 3)} AU · T²/a³=${t2a3}`;
                 }
             });
         });
@@ -908,7 +913,7 @@ MODES['kepler'] = (() => {
             drawingContext.setLineDash([]);
             noStroke();
             fill(180, 200, 230, 200); textSize(10); textAlign(CENTER, TOP);
-            text('a = ' + a.toFixed(2), ecx + a * scale * 0.5, cy + 6);
+            text('a = ' + fmt(a, 2), ecx + a * scale * 0.5, cy + 6);
             textAlign(LEFT, BASELINE);
 
             // Periapsis / Apoapsis markers
@@ -955,7 +960,7 @@ MODES['kepler'] = (() => {
             let rPx = dist(sunX, sunY, bx, by);
             textSize(10); fill(200, 215, 240); textAlign(LEFT, BASELINE);
             let mid = { x: (sunX+bx)/2+8, y: (sunY+by)/2 };
-            text('r = ' + pos.r.toFixed(3), mid.x, mid.y);
+            text('r = ' + fmt(pos.r, 3), mid.x, mid.y);
             textAlign(LEFT, BASELINE);
         }
 
@@ -993,7 +998,7 @@ MODES['kepler'] = (() => {
             let T  = 2 * Math.PI / 1.0 * Math.sqrt(a * a * a / GM);
             let ratio = (T * T) / (a * a * a);
             noStroke(); fill(200, 215, 240); textSize(11); textAlign(CENTER, TOP);
-            text(`T = ${T.toFixed(3)}  |  a = ${a.toFixed(2)}  |  T²/a³ = ${ratio.toFixed(2)}`, cx, 16);
+            text(`T = ${fmt(T, 3)}  |  a = ${fmt(a, 2)}  |  T²/a³ = ${fmt(ratio, 2)}`, cx, 16);
             textAlign(LEFT, BASELINE);
         }
     }
@@ -1031,13 +1036,13 @@ MODES['kepler'] = (() => {
             <div class="atom-card-label">Parámetros Orbitales</div>
             <div class="card-body-static">
                 <label style="font-size:10.5px;color:var(--text-muted)">
-                    Semieje mayor (a) <span id="k-a-val">1.00</span>
+                    Semieje mayor (a) <span id="k-a-val">1,00</span>
                 </label>
                 <div class="slider-row" style="margin-top:4px">
                     <input type="range" id="k-a" min="40" max="130" value="100" step="1">
                 </div>
                 <label style="font-size:10.5px;color:var(--text-muted);margin-top:6px;display:block">
-                    Excentricidad (e) <span id="k-e-val">0.50</span>
+                    Excentricidad (e) <span id="k-e-val">0,50</span>
                 </label>
                 <div class="slider-row" style="margin-top:4px">
                     <input type="range" id="k-e" min="0" max="90" value="50" step="1">
@@ -1080,12 +1085,12 @@ MODES['kepler'] = (() => {
             }));
         document.getElementById('k-a').addEventListener('input', () => {
             a = parseInt(document.getElementById('k-a').value) / 100;
-            document.getElementById('k-a-val').textContent = a.toFixed(2);
+            document.getElementById('k-a-val').textContent = fmt(a, 2);
             angle = 0;
         });
         document.getElementById('k-e').addEventListener('input', () => {
             e = parseInt(document.getElementById('k-e').value) / 100;
-            document.getElementById('k-e-val').textContent = e.toFixed(2);
+            document.getElementById('k-e-val').textContent = fmt(e, 2);
             angle = 0;
         });
         document.getElementById('k-pause').addEventListener('click', () => {
@@ -1239,8 +1244,8 @@ MODES['binary'] = (() => {
 
         // Labels
         fill(200, 215, 240, 200); textSize(9.5); textAlign(CENTER, TOP);
-        text(`M₁ = ${m1.toFixed(1)}`, x1, y1 + r1_px + 5);
-        text(`M₂ = ${m2.toFixed(1)}`, x2, y2 + r2_px + 5);
+        text(`M₁ = ${fmt(m1, 1)}`, x1, y1 + r1_px + 5);
+        text(`M₂ = ${fmt(m2, 1)}`, x2, y2 + r2_px + 5);
         fill(100, 240, 100, 160); text('CM', cm_sx + 10, cm_sy - 4);
         textAlign(LEFT, BASELINE);
 
@@ -1250,7 +1255,7 @@ MODES['binary'] = (() => {
         let KE = 0.5*m1*(s1.vx*s1.vx+s1.vy*s1.vy) + 0.5*m2*(s2.vx*s2.vx+s2.vy*s2.vy);
         let PE = -G * m1 * m2 / r;
         fill(160, 175, 200, 180); textSize(10); textAlign(LEFT, BOTTOM);
-        text(`Ec = ${KE.toFixed(3)}  |  Ep = ${PE.toFixed(3)}  |  E = ${(KE+PE).toFixed(3)}`, 12, height - 10);
+        text(`Ec = ${fmt(KE, 3)}  |  Ep = ${fmt(PE, 3)}  |  E = ${fmt((KE+PE), 3)}`, 12, height - 10);
         textAlign(LEFT, BASELINE);
     }
 
@@ -1264,19 +1269,19 @@ MODES['binary'] = (() => {
             <div class="atom-card-label">Masas (en M☉)</div>
             <div class="card-body-static">
                 <label style="font-size:10.5px;color:var(--text-muted)">
-                    Estrella 1 (naranja) <span id="b-m1-val">2.0</span>
+                    Estrella 1 (naranja) <span id="b-m1-val">2,0</span>
                 </label>
                 <div class="slider-row" style="margin-top:4px">
                     <input type="range" id="b-m1" min="5" max="50" value="20" step="1">
                 </div>
                 <label style="font-size:10.5px;color:var(--text-muted);margin-top:6px;display:block">
-                    Estrella 2 (azul) <span id="b-m2-val">1.0</span>
+                    Estrella 2 (azul) <span id="b-m2-val">1,0</span>
                 </label>
                 <div class="slider-row" style="margin-top:4px">
                     <input type="range" id="b-m2" min="5" max="50" value="10" step="1">
                 </div>
                 <label style="font-size:10.5px;color:var(--text-muted);margin-top:6px;display:block">
-                    Separación <span id="b-sep-val">1.6</span>
+                    Separación <span id="b-sep-val">1,6</span>
                 </label>
                 <div class="slider-row" style="margin-top:4px">
                     <input type="range" id="b-sep" min="8" max="30" value="16" step="1">
@@ -1315,9 +1320,9 @@ MODES['binary'] = (() => {
             m1 = parseInt(document.getElementById('b-m1').value) / 10;
             m2 = parseInt(document.getElementById('b-m2').value) / 10;
             separation = parseInt(document.getElementById('b-sep').value) / 10;
-            document.getElementById('b-m1-val').textContent = m1.toFixed(1);
-            document.getElementById('b-m2-val').textContent = m2.toFixed(1);
-            document.getElementById('b-sep-val').textContent = separation.toFixed(1);
+            document.getElementById('b-m1-val').textContent = fmt(m1, 1);
+            document.getElementById('b-m2-val').textContent = fmt(m2, 1);
+            document.getElementById('b-sep-val').textContent = fmt(separation, 1);
             init();
         }
         ['b-m1','b-m2','b-sep'].forEach(id =>
