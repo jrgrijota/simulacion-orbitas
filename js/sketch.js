@@ -10,7 +10,7 @@ const EARTH_R_KM  = 6371;
 
 // Números con coma decimal, como se escriben en clase.
 function fmt(x, d) {
-    return Number(x).toFixed(d).replace('.', ',');
+    return i18n.num(x, d);   // coma en español, punto en inglés
 }
 
 // ── SHARED VISUAL ──────────────────────────────────────────────────────────────
@@ -32,6 +32,7 @@ function switchMode(name) {
     container.innerHTML = '';
     activeMode = MODES[name];
     if (activeMode && activeMode.enter) activeMode.enter(container);
+    i18n.translateTree(container);   // textos fijos de los paneles del modo
 }
 
 // ── P5 SETUP / DRAW ────────────────────────────────────────────────────────────
@@ -109,12 +110,13 @@ function card(innerHTML, collapsed = false) {
     return el;
 }
 
-function collapsibleCard(title, bodyHTML, expanded = true) {
+// i18nKey: clave del diccionario con el cuerpo traducido (frases con marcado)
+function collapsibleCard(title, bodyHTML, expanded = true, i18nKey = '') {
     let div = document.createElement('div');
     div.className = 'card' + (expanded ? ' is-expanded' : '');
     div.innerHTML = `
         <button class="card-trigger">${title} <span class="card-chevron">▼</span></button>
-        <div class="card-body"><div class="info-section">${bodyHTML}</div></div>`;
+        <div class="card-body"><div class="info-section"${i18nKey ? ` data-i18n="${i18nKey}"` : ''}>${bodyHTML}</div></div>`;
     div.querySelector('.card-trigger').addEventListener('click', () => div.classList.toggle('is-expanded'));
     return div;
 }
@@ -336,7 +338,7 @@ MODES['newton'] = (() => {
                 drawVectorArrow(sx, sy, bullet.vx/sp, -bullet.vy/sp, vLen, color(255,225,90), 'v');
             }
             let fLen = constrain(30 * (LAUNCH_R_KM / r) * (LAUNCH_R_KM / r), 8, 50);
-            drawVectorArrow(sx, sy, -bullet.x/r, bullet.y/r, fLen, color(255,95,80), 'P');
+            drawVectorArrow(sx, sy, -bullet.x/r, bullet.y/r, fLen, color(255,95,80), i18n.t('P'));
         }
 
         // Periapsis / apoapsis markers when in stable orbit
@@ -366,33 +368,33 @@ MODES['newton'] = (() => {
     function updateBox() {
         let box = document.getElementById('n-estado');
         if (!box) return;
-        if (!bullet) { box.innerHTML = '<span class="ui-empty">Sin proyectil activo</span>'; return; }
+        if (!bullet) { box.innerHTML = '<span class="ui-empty">' + i18n.t('Sin proyectil activo') + '</span>'; return; }
         if (bullet.crashed) {
-            box.innerHTML = '<span style="color:#ef4444;font-weight:700">💥 Impacto con la Tierra</span><br>' +
-                `<span style="color:#9aa6bd;font-size:10px">Órbitas completas: ${orbitCount}</span>`; return;
+            box.innerHTML = '<span style="color:#ef4444;font-weight:700">' + i18n.t('💥 Impacto con la Tierra') + '</span><br>' +
+                `<span style="color:#9aa6bd;font-size:10px">${i18n.t('Órbitas completas: {n}', { n: orbitCount })}</span>`; return;
         }
         if (bullet.escaped) {
-            box.innerHTML = '<span style="color:#a78bfa;font-weight:700">🚀 Escape gravitatorio</span><br>' +
-                '<span style="color:#9aa6bd;font-size:10px">Energía mecánica positiva — sin retorno</span>'; return;
+            box.innerHTML = '<span style="color:#a78bfa;font-weight:700">' + i18n.t('🚀 Escape gravitatorio') + '</span><br>' +
+                '<span style="color:#9aa6bd;font-size:10px">' + i18n.t('Energía mecánica positiva — sin retorno') + '</span>'; return;
         }
         let el = orbitalElements(bullet);
-        let altStr  = Math.round(el.r - EARTH_R_KM).toLocaleString() + ' km';
-        let periStr = Math.round(el.rP - EARTH_R_KM).toLocaleString() + ' km';
-        let apoStr  = el.rA < 1e8 ? Math.round(el.rA - EARTH_R_KM).toLocaleString() + ' km' : '∞';
+        let altStr  = Math.round(el.r - EARTH_R_KM).toLocaleString(i18n.lang === 'en' ? 'en-GB' : undefined) + ' km';
+        let periStr = Math.round(el.rP - EARTH_R_KM).toLocaleString(i18n.lang === 'en' ? 'en-GB' : undefined) + ' km';
+        let apoStr  = el.rA < 1e8 ? Math.round(el.rA - EARTH_R_KM).toLocaleString(i18n.lang === 'en' ? 'en-GB' : undefined) + ' km' : '∞';
         let perStr  = el.T < Infinity ? fmt((el.T / 60), 1) + ' min' : '—';
         let epsSign = el.eps >= 0 ? '+' : '';
         let epsCol  = el.eps < 0 ? '#60a5fa' : '#a78bfa';
         let orbRow  = (el.type !== 'Suborbital' && el.type !== 'Vel. de escape')
-            ? uiRow('Órbitas', orbitCount + (bullet._flash > 0 ? ' ✓' : ''),
+            ? uiRow(i18n.t('Órbitas'), orbitCount + (bullet._flash > 0 ? ' ✓' : ''),
                     bullet._flash > 0 ? '#10b981' : '#eef2f8') : '';
         box.innerHTML =
-            uiRow('Velocidad',   fmt(el.v, 2) + ' km/s') +
-            uiRow('Altitud',     altStr) +
-            uiRow('Trayectoria', el.type, el.col) +
-            uiRow('Energía ε',   epsSign + fmt(el.eps, 1) + ' km²/s²', epsCol) +
-            uiRow('Perigeo',     periStr, el.rP < EARTH_R_KM + 100 ? '#f97316' : '#9aa6bd') +
-            uiRow('Apogeo',      apoStr, '#9aa6bd') +
-            uiRow('Período',     perStr, '#9aa6bd') +
+            uiRow(i18n.t('Velocidad'),   fmt(el.v, 2) + ' km/s') +
+            uiRow(i18n.t('Altitud'),     altStr) +
+            uiRow(i18n.t('Trayectoria'), i18n.t(el.type), el.col) +
+            uiRow(i18n.t('Energía ε'),   epsSign + fmt(el.eps, 1) + ' km²/s²', epsCol) +
+            uiRow(i18n.t('Perigeo'),     periStr, el.rP < EARTH_R_KM + 100 ? '#f97316' : '#9aa6bd') +
+            uiRow(i18n.t('Apogeo'),      apoStr, '#9aa6bd') +
+            uiRow(i18n.t('Período'),     perStr, '#9aa6bd') +
             orbRow;
     }
 
@@ -410,14 +412,14 @@ MODES['newton'] = (() => {
 
     function pause() {
         paused = !paused;
-        document.getElementById('n-pause').textContent = paused ? '▶ Reanudar' : '⏸ Pausar';
+        document.getElementById('n-pause').textContent = i18n.t(paused ? '▶ Reanudar' : '⏸ Pausar');
     }
 
     function reset() {
         bullet = null; trail = []; orbitCount = 0; lastAngle = null;
         running = false; paused = false; statusDirty = true;
         let p = document.getElementById('n-pause');
-        if (p) { p.disabled = true; p.textContent = '⏸ Pausar'; }
+        if (p) { p.disabled = true; p.textContent = i18n.t('⏸ Pausar'); }
         let f = document.getElementById('n-fire');
         if (f) f.disabled = false;
         let s = document.getElementById('n-slider');
@@ -457,7 +459,7 @@ MODES['newton'] = (() => {
         else if (vKms < V_ESC)         { cls = 'traj-elliptical'; txt = 'Órbita elíptica'; }
         else                            { cls = 'traj-escape';     txt = 'Vel. de escape'; }
         let el = document.getElementById('n-vel-type');
-        el.className = 'traj-label ' + cls; el.textContent = txt;
+        el.className = 'traj-label ' + cls; el.textContent = i18n.t(txt);
     }
 
     function buildMarks() {
@@ -538,7 +540,7 @@ MODES['newton'] = (() => {
             `<p>Newton imaginó que si se dispara una bala horizontalmente desde una montaña muy alta, con suficiente velocidad, la curvatura de su caída igualaría la curvatura de la Tierra, manteniéndola en <em>órbita</em> permanente.</p>
             <p>La <em>energía específica orbital</em> ε = v²/2 − GM/r determina el tipo de trayectoria: <b>ε &lt; 0</b> → órbita ligada (elíptica o circular); <b>ε ≥ 0</b> → escape. El <b>perigeo</b> (punto más cercano) determina si la bala choca con la Tierra.</p>
             <p>Marcador amarillo = perigeo · Azul = apogeo · Círculo verde = órbita circular de referencia.</p>`,
-            false));
+            false, 'info-newton'));
 
         // Events
         document.getElementById('n-slider').addEventListener('input', updateVelLabel);
@@ -718,10 +720,10 @@ MODES['planets'] = (() => {
         noStroke(); fill(20, 28, 48, 210);
         rect(lx - 4, ly - 14, 92, 36, 5);
         fill(200, 215, 240); textSize(10); textAlign(LEFT, TOP);
-        text(p.name, lx, ly - 11);
+        text(i18n.t(p.name), lx, ly - 11);
         fill(140, 155, 180); textSize(9);
         text(`a = ${fmt(p.a, 3)} AU`, lx, ly + 1);
-        text(`T = ${fmt(p.T, 3)} años`, lx, ly + 12);
+        text(i18n.t('T = {T} años', { T: fmt(p.T, 3) }), lx, ly + 12);
         textAlign(LEFT, BASELINE);
     }
 
@@ -743,7 +745,7 @@ MODES['planets'] = (() => {
             `<div class="planet-row" data-idx="${i}">
                 <div class="planet-dot" style="background:${p.color}"></div>
                 <span class="planet-name">${p.name}</span>
-                <span class="planet-stat">${fmt(p.a, 3)} AU · ${fmt(p.T, 2)} a</span>
+                <span class="planet-stat">${i18n.t('{a} AU · {T} a', { a: fmt(p.a, 3), T: fmt(p.T, 2) })}</span>
             </div>`).join('');
         lc.innerHTML = `<div class="atom-card-label">Planetas</div>
             <div class="card-body-static"><div class="planet-legend">${rows}</div></div>`;
@@ -782,7 +784,7 @@ MODES['planets'] = (() => {
         container.appendChild(collapsibleCard('Ley de Kepler III (T² ∝ a³)',
             `<p>Para todos los planetas del Sistema Solar: <b>T² = a³</b> (con T en años y a en UA). Esta relación es consecuencia directa de la ley de gravitación universal de Newton.</p>
             <p>Pulsa sobre cualquier planeta de la lista para ver sus parámetros orbitales y verificar la ley.</p>
-            <p>Ojo: de Júpiter hacia fuera las órbitas están dibujadas más cerca de lo que les corresponde para que quepan en la pantalla; los datos de la lista son los reales.</p>`, false));
+            <p>Ojo: de Júpiter hacia fuera las órbitas están dibujadas más cerca de lo que les corresponde para que quepan en la pantalla; los datos de la lista son los reales.</p>`, false, 'info-kepler3'));
 
         // Events: planet legend clicks
         container.querySelectorAll('.planet-row').forEach(row => {
@@ -802,7 +804,7 @@ MODES['planets'] = (() => {
 
         document.getElementById('p-pause').addEventListener('click', () => {
             paused = !paused;
-            document.getElementById('p-pause').textContent = paused ? '▶ Reanudar' : '⏸ Pausar';
+            document.getElementById('p-pause').textContent = i18n.t(paused ? '▶ Reanudar' : '⏸ Pausar');
         });
         document.getElementById('p-reset').addEventListener('click', () => {
             angles = PLANETS.map(() => random(TWO_PI));
@@ -922,8 +924,8 @@ MODES['kepler'] = (() => {
             fill(255, 180, 60, 200); circle(peri.sx, peri.sy, 7);
             fill(80, 160, 255, 180); circle(apo.sx, apo.sy, 7);
             fill(200, 215, 240, 180); textSize(9); textAlign(LEFT, CENTER);
-            text('Perihelio', peri.sx + 6, peri.sy);
-            text('Afelio', apo.sx + 6, apo.sy);
+            text(i18n.t('Perihelio'), peri.sx + 6, peri.sy);
+            text(i18n.t('Afelio'), apo.sx + 6, apo.sy);
             textAlign(LEFT, BASELINE);
         }
     }
@@ -1010,7 +1012,7 @@ MODES['kepler'] = (() => {
             '3ª Ley: T² ∝ a³  — Varía la excentricidad y el semieje mayor.'
         ];
         fill(160, 175, 200, 200); noStroke(); textSize(10.5); textAlign(LEFT, BOTTOM);
-        text(labels[activeLaw - 1], 12, height - 10);
+        text(i18n.t(labels[activeLaw - 1]), 12, height - 10);
         textAlign(LEFT, BASELINE);
     }
 
@@ -1036,13 +1038,13 @@ MODES['kepler'] = (() => {
             <div class="atom-card-label">Parámetros Orbitales</div>
             <div class="card-body-static">
                 <label style="font-size:10.5px;color:var(--text-muted)">
-                    Semieje mayor (a) <span id="k-a-val">1,00</span>
+                    Semieje mayor (a) <span id="k-a-val">${fmt(a, 2)}</span>
                 </label>
                 <div class="slider-row" style="margin-top:4px">
                     <input type="range" id="k-a" min="40" max="130" value="100" step="1">
                 </div>
                 <label style="font-size:10.5px;color:var(--text-muted);margin-top:6px;display:block">
-                    Excentricidad (e) <span id="k-e-val">0,50</span>
+                    Excentricidad (e) <span id="k-e-val">${fmt(e, 2)}</span>
                 </label>
                 <div class="slider-row" style="margin-top:4px">
                     <input type="range" id="k-e" min="0" max="90" value="50" step="1">
@@ -1074,7 +1076,7 @@ MODES['kepler'] = (() => {
         container.appendChild(collapsibleCard('Las 3 Leyes de Kepler',
             `<p><b>1ª:</b> Todos los planetas siguen órbitas elípticas con el Sol en uno de los dos focos.</p>
             <p><b>2ª:</b> La línea que une el planeta con el Sol barre áreas iguales en tiempos iguales (consecuencia de la conservación del momento angular).</p>
-            <p><b>3ª:</b> El cuadrado del período orbital es proporcional al cubo del semieje mayor: <em>T² ∝ a³</em>.</p>`, false));
+            <p><b>3ª:</b> El cuadrado del período orbital es proporcional al cubo del semieje mayor: <em>T² ∝ a³</em>.</p>`, false, 'info-kepler'));
 
         // Events
         document.querySelectorAll('.k-law-btn').forEach(b =>
@@ -1095,7 +1097,7 @@ MODES['kepler'] = (() => {
         });
         document.getElementById('k-pause').addEventListener('click', () => {
             paused = !paused;
-            document.getElementById('k-pause').textContent = paused ? '▶ Reanudar' : '⏸ Pausar';
+            document.getElementById('k-pause').textContent = i18n.t(paused ? '▶ Reanudar' : '⏸ Pausar');
         });
         document.getElementById('k-reset').addEventListener('click', () => { angle = 0; });
         document.querySelectorAll('.k-speed-btn').forEach(b =>
@@ -1255,7 +1257,7 @@ MODES['binary'] = (() => {
         let KE = 0.5*m1*(s1.vx*s1.vx+s1.vy*s1.vy) + 0.5*m2*(s2.vx*s2.vx+s2.vy*s2.vy);
         let PE = -G * m1 * m2 / r;
         fill(160, 175, 200, 180); textSize(10); textAlign(LEFT, BOTTOM);
-        text(`Ec = ${fmt(KE, 3)}  |  Ep = ${fmt(PE, 3)}  |  E = ${fmt((KE+PE), 3)}`, 12, height - 10);
+        text(i18n.t('Ec = {k}  |  Ep = {p}  |  E = {e}', { k: fmt(KE, 3), p: fmt(PE, 3), e: fmt((KE+PE), 3) }), 12, height - 10);
         textAlign(LEFT, BASELINE);
     }
 
@@ -1269,19 +1271,19 @@ MODES['binary'] = (() => {
             <div class="atom-card-label">Masas (en M☉)</div>
             <div class="card-body-static">
                 <label style="font-size:10.5px;color:var(--text-muted)">
-                    Estrella 1 (naranja) <span id="b-m1-val">2,0</span>
+                    Estrella 1 (naranja) <span id="b-m1-val">${fmt(m1, 1)}</span>
                 </label>
                 <div class="slider-row" style="margin-top:4px">
                     <input type="range" id="b-m1" min="5" max="50" value="20" step="1">
                 </div>
                 <label style="font-size:10.5px;color:var(--text-muted);margin-top:6px;display:block">
-                    Estrella 2 (azul) <span id="b-m2-val">1,0</span>
+                    Estrella 2 (azul) <span id="b-m2-val">${fmt(m2, 1)}</span>
                 </label>
                 <div class="slider-row" style="margin-top:4px">
                     <input type="range" id="b-m2" min="5" max="50" value="10" step="1">
                 </div>
                 <label style="font-size:10.5px;color:var(--text-muted);margin-top:6px;display:block">
-                    Separación <span id="b-sep-val">1,6</span>
+                    Separación <span id="b-sep-val">${fmt(separation, 1)}</span>
                 </label>
                 <div class="slider-row" style="margin-top:4px">
                     <input type="range" id="b-sep" min="8" max="30" value="16" step="1">
@@ -1313,7 +1315,7 @@ MODES['binary'] = (() => {
         container.appendChild(collapsibleCard('Centro de Masa y Sistemas Binarios',
             `<p>En un sistema de dos cuerpos, ambas estrellas orbitan alrededor del <em>centro de masa</em> (CM, marcador verde ✛). La estrella más masiva describe una órbita más pequeña.</p>
             <p>La relación entre los radios orbitales es inversa a la relación de masas: <b>r₁/r₂ = M₂/M₁</b>. El sistema tiene <b>energía total conservada</b> (mostrada en pantalla).</p>
-            <p>Varía las masas y observa cómo cambia la posición del CM y el tamaño de cada órbita.</p>`, false));
+            <p>Varía las masas y observa cómo cambia la posición del CM y el tamaño de cada órbita.</p>`, false, 'info-binary'));
 
         // Events
         function reInit() {
@@ -1329,7 +1331,7 @@ MODES['binary'] = (() => {
             document.getElementById(id).addEventListener('input', reInit));
         document.getElementById('b-pause').addEventListener('click', () => {
             paused = !paused;
-            document.getElementById('b-pause').textContent = paused ? '▶ Reanudar' : '⏸ Pausar';
+            document.getElementById('b-pause').textContent = i18n.t(paused ? '▶ Reanudar' : '⏸ Pausar');
         });
         document.getElementById('b-reset').addEventListener('click', init);
         document.querySelectorAll('.b-speed-btn').forEach(b =>
