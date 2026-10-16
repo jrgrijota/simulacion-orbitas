@@ -94,6 +94,8 @@ window.I18N_CA = {
         "<p>En un sistema de dos cossos, totes dues estrelles orbiten al voltant del <em>centre de masses</em> (CM, marcador verd ✛). L'estrella més massiva descriu una òrbita més petita.</p>" +
         '<p>La relació entre els radis orbitals és la inversa de la relació de masses: <b>r₁/r₂ = M₂/M₁</b>. L\'<b>energia total</b> del sistema <b>es conserva</b> (es mostra a la pantalla).</p>' +
         "<p>Canvia les masses i observa com varien la posició del CM i la mida de cada òrbita.</p>",
+  // Nombres de controles para lectores de pantalla
+  'Modo de simulación': 'Mode de simulació',
   // Sello de la zona de simulación (js/sello.js)
   'Más simulaciones en simulaciencia.es': 'Més simulacions a simulaciencia.es'
 };
