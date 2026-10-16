@@ -93,5 +93,7 @@ window.I18N_EN = {
     'info-binary':
         '<p>In a two-body system, both stars orbit the <em>centre of mass</em> (CM, green marker ✛). The more massive star moves in a smaller orbit.</p>' +
         '<p>The ratio of the orbital radii is the inverse of the ratio of the masses: <b>r₁/r₂ = M₂/M₁</b>. The system’s <b>total energy is conserved</b> (shown on screen).</p>' +
-        '<p>Change the masses and watch how the position of the CM and the size of each orbit change.</p>'
+        '<p>Change the masses and watch how the position of the CM and the size of each orbit change.</p>',
+  // Sello de la zona de simulación (js/sello.js)
+  'Más simulaciones en simulaciencia.es': 'More simulations at simulaciencia.es'
 };

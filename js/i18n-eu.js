@@ -93,5 +93,7 @@ window.I18N_EU = {
     'info-binary':
         '<p>Bi gorputzeko sistema batean, bi izarrek <em>masa-zentroaren</em> inguruan egiten dute orbita (CM, ✛ marka berdea). Izar masiboenak orbita txikiagoa egiten du.</p>' +
         '<p>Orbita-erradioen arteko erlazioa masen arteko erlazioaren alderantzizkoa da: <b>r₁/r₂ = M₂/M₁</b>. Sistemaren <b>energia totala kontserbatu egiten da</b> (pantailan ageri da).</p>' +
-        '<p>Aldatu masak, eta ikusi nola aldatzen diren CMaren posizioa eta orbita bakoitzaren tamaina.</p>'
+        '<p>Aldatu masak, eta ikusi nola aldatzen diren CMaren posizioa eta orbita bakoitzaren tamaina.</p>',
+  // Sello de la zona de simulación (js/sello.js)
+  'Más simulaciones en simulaciencia.es': 'Simulazio gehiago simulaciencia.es webgunean'
 };
