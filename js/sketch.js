@@ -483,10 +483,10 @@ MODES['newton'] = (() => {
         // Velocity card
         let vc = document.createElement('div'); vc.className = 'card';
         vc.innerHTML = `
-            <div class="atom-card-label">Velocidad Inicial</div>
+            <div class="atom-card-label" id="n-slider-label">Velocidad Inicial</div>
             <div class="card-body-static">
                 <div class="slider-row">
-                    <input type="range" id="n-slider" min="5" max="110" value="60" step="1">
+                    <input type="range" id="n-slider" aria-labelledby="n-slider-label" min="5" max="110" value="60" step="1">
                 </div>
                 <div class="slider-meta">
                     <span id="n-vel-label">—</span>
@@ -1037,13 +1037,13 @@ MODES['kepler'] = (() => {
         sc.innerHTML = `
             <div class="atom-card-label">Parámetros Orbitales</div>
             <div class="card-body-static">
-                <label style="font-size:10.5px;color:var(--text-muted)">
+                <label for="k-a" style="font-size:10.5px;color:var(--text-muted)">
                     Semieje mayor (a) <span id="k-a-val">${fmt(a, 2)}</span>
                 </label>
                 <div class="slider-row" style="margin-top:4px">
                     <input type="range" id="k-a" min="40" max="130" value="100" step="1">
                 </div>
-                <label style="font-size:10.5px;color:var(--text-muted);margin-top:6px;display:block">
+                <label for="k-e" style="font-size:10.5px;color:var(--text-muted);margin-top:6px;display:block">
                     Excentricidad (e) <span id="k-e-val">${fmt(e, 2)}</span>
                 </label>
                 <div class="slider-row" style="margin-top:4px">
@@ -1270,19 +1270,19 @@ MODES['binary'] = (() => {
         mc.innerHTML = `
             <div class="atom-card-label">Masas (en M☉)</div>
             <div class="card-body-static">
-                <label style="font-size:10.5px;color:var(--text-muted)">
+                <label for="b-m1" style="font-size:10.5px;color:var(--text-muted)">
                     Estrella 1 (naranja) <span id="b-m1-val">${fmt(m1, 1)}</span>
                 </label>
                 <div class="slider-row" style="margin-top:4px">
                     <input type="range" id="b-m1" min="5" max="50" value="20" step="1">
                 </div>
-                <label style="font-size:10.5px;color:var(--text-muted);margin-top:6px;display:block">
+                <label for="b-m2" style="font-size:10.5px;color:var(--text-muted);margin-top:6px;display:block">
                     Estrella 2 (azul) <span id="b-m2-val">${fmt(m2, 1)}</span>
                 </label>
                 <div class="slider-row" style="margin-top:4px">
                     <input type="range" id="b-m2" min="5" max="50" value="10" step="1">
                 </div>
-                <label style="font-size:10.5px;color:var(--text-muted);margin-top:6px;display:block">
+                <label for="b-sep" style="font-size:10.5px;color:var(--text-muted);margin-top:6px;display:block">
                     Separación <span id="b-sep-val">${fmt(separation, 1)}</span>
                 </label>
                 <div class="slider-row" style="margin-top:4px">

@@ -94,6 +94,8 @@ window.I18N_GL = {
         '<p>Nun sistema de dous corpos, as dúas estrelas orbitan arredor do <em>centro de masas</em> (CM, marcador verde ✛). A estrela de maior masa describe unha órbita máis pequena.</p>' +
         '<p>A relación entre os raios orbitais é a inversa da relación entre as masas: <b>r₁/r₂ = M₂/M₁</b>. A <b>enerxía total</b> do sistema <b>consérvase</b> (amósase na pantalla).</p>' +
         '<p>Cambia as masas e observa como varían a posición do CM e o tamaño de cada órbita.</p>',
+  // Nombres de controles para lectores de pantalla
+  'Modo de simulación': 'Modo de simulación',
   // Sello de la zona de simulación (js/sello.js)
   'Más simulaciones en simulaciencia.es': 'Máis simulacións en simulaciencia.es'
 };
