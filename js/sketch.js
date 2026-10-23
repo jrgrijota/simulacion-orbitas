@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-//  Laboratorio de Órbitas — sketch.js
+//  Órbitas y Gravitación — sketch.js
 //  Modos: Newton | Sistema Solar | Leyes de Kepler | Estrellas Binarias
 // ═══════════════════════════════════════════════════════════════════════════════
 

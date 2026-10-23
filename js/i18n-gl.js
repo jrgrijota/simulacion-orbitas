@@ -1,7 +1,7 @@
 // Traducciones al gallego (se usan con ?lang=gl). Ver js/i18n.js.
 window.I18N_GL = {
     // Cabecera y selector de modo
-    'Laboratorio de Órbitas': 'Laboratorio de órbitas',
+    'Órbitas y Gravitación': 'Órbitas e gravitación',
     'Mecánica Orbital · Newton · Kepler': 'Mecánica orbital · Newton · Kepler',
     'Bala de Cañón de Newton': 'Bala de canón de Newton',
     'Sistema Solar': 'Sistema Solar',

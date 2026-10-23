@@ -1,7 +1,7 @@
 // Traducciones al euskera (se usan con ?lang=eu). Ver js/i18n.js.
 window.I18N_EU = {
     // Cabecera y selector de modo
-    'Laboratorio de Órbitas': 'Orbiten laborategia',
+    'Órbitas y Gravitación': 'Orbitak eta grabitazioa',
     'Mecánica Orbital · Newton · Kepler': 'Mekanika orbitala · Newton · Kepler',
     'Bala de Cañón de Newton': 'Newtonen kanoi-bala',
     'Sistema Solar': 'Eguzki-sistema',

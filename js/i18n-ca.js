@@ -1,7 +1,7 @@
 // Traducciones al catalán (se usan con ?lang=ca). Ver js/i18n.js.
 window.I18N_CA = {
     // Cabecera y selector de modo
-    'Laboratorio de Órbitas': "Laboratori d'Òrbites",
+    'Órbitas y Gravitación': 'Òrbites i Gravitació',
     'Mecánica Orbital · Newton · Kepler': 'Mecànica orbital · Newton · Kepler',
     'Bala de Cañón de Newton': 'Bala de canó de Newton',
     'Sistema Solar': 'Sistema Solar',

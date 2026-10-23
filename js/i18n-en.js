@@ -1,7 +1,7 @@
 // Traducciones al inglés (se usan con ?lang=en). Ver js/i18n.js.
 window.I18N_EN = {
     // Cabecera y selector de modo
-    'Laboratorio de Órbitas': 'Orbits Lab',
+    'Órbitas y Gravitación': 'Orbits and Gravitation',
     'Mecánica Orbital · Newton · Kepler': 'Orbital Mechanics · Newton · Kepler',
     'Bala de Cañón de Newton': "Newton's Cannonball",
     'Sistema Solar': 'Solar System',
