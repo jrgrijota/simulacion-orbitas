@@ -57,6 +57,31 @@ function setup() {
     sel.addEventListener('change', () => switchMode(sel.value));
     switchMode(sel.value);
 
+    // Simulación ya preparada desde la dirección (js/parametros.js),
+    // p. ej. ?modo=kepler&ley=2&e=0.8 o ?modo=newton&velocidad=7
+    const boton = (selector) => (v) => {
+        const b = [...document.querySelectorAll(selector)].find(x =>
+            x.dataset.law === v);
+        if (b) b.click();
+    };
+    aplicarParametrosUrl({
+        modo:       (v) => urlParam.select('mode-select')({ planetas: 'planets', 'sistema-solar': 'planets',
+                        binarias: 'binary' }[v] || v),
+        velocidad:  urlParam.range('n-slider', 100 / MODES.newton.vMax),   // km/s
+        ley:        boton('.k-law-btn'),
+        a:          urlParam.range('k-a', 100),
+        e:          urlParam.range('k-e', 100),
+        m1:         urlParam.range('b-m1', 10),                            // masas solares
+        m2:         urlParam.range('b-m2', 10),
+        separacion: urlParam.range('b-sep', 10),
+        planeta:    (v) => {
+            const fila = [...document.querySelectorAll('.planet-row')].find(r =>
+                r.querySelector('.planet-name').textContent.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+                === v.normalize('NFD').replace(/[\u0300-\u036f]/g, ''));
+            if (fila) fila.click();
+        },
+    });
+
     window.addEventListener('resize', () => {
         let s = frameCanvasSize();
         resizeCanvas(s.w, s.h);
@@ -567,7 +592,7 @@ MODES['newton'] = (() => {
         if (_onKey) { document.removeEventListener('keydown', _onKey); _onKey = null; }
     }
 
-    return { enter, exit, draw };
+    return { enter, exit, draw, vMax: V_MAX };
 })();
 
 
